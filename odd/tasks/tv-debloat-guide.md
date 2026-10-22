@@ -39,3 +39,14 @@ The work was done interactively and lives in a private Obsidian note, local back
 
 ## Progress
 - Branch `docs/tv-debloat-guide` created.
+- Work-unit commit `affa1f4` (T1–T3). Native review: high risk, consent granted, 4 lenses, approved and acknowledged (lineage `review-dbeff06d13f49ff1`).
+
+## Follow-ups (non-blocking review findings)
+- `scripts/debloat.sh`: exit non-zero when any package fails; a disconnected device is misreported; the do-not-touch list diverges from the docs.
+- `scripts/backup.sh`: masks adb failures.
+- `scripts/revert.sh`: reports success when the lists are missing.
+- Docs: duplicated package reference in the skill, table legend wording, name the HDMI-permission packages explicitly.
+- Add committed tests for the do-not-touch guard (fake `adb`).
+
+## Next step
+User decides: fix the follow-ups, translate, or publish (push/PR remain user decisions).
