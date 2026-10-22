@@ -1,0 +1,27 @@
+# Packages scripts/debloat.sh always refuses. Single source of truth:
+# docs/packages-tcl-g08.md ("Do not touch") must list exactly these, with the
+# consequence of breaking each one. tests/run.sh checks that they match.
+# Observed or reported on TCL G08 / Android 14. Add, never remove, for other TVs.
+
+# HDMI inputs and the Quick Panel
+com.tcl.tvinput
+com.tcl.tv
+com.tcl.suspension
+
+# Wi-Fi and initial setup
+com.tcl.providers.config
+com.tcl.initsetup
+com.tcl.factory.view
+com.google.android.tungsten.setupwraith
+
+# Voice
+com.google.android.tv.remote.service
+com.google.android.katniss
+
+# Console game mode
+com.tcl.gamebar
+
+# Core system
+com.google.android.apps.tv.launcherx
+com.google.android.gms
+com.android.systemui

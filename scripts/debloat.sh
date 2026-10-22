@@ -15,7 +15,7 @@ usage: debloat.sh SERIAL LIST_FILE [--method disable|uninstall] [--record-dir DI
   --apply     actually run the commands (default is a dry run)
 
 Neither method deletes the system APK. Undo with scripts/revert.sh.
-Packages on the built-in DO-NOT-TOUCH list are always refused.
+Packages in scripts/lists/do-not-touch.txt are always refused.
 EOF
   exit 2
 }
@@ -40,22 +40,27 @@ case "$METHOD" in
 esac
 [ -f "$LIST" ] || { echo "list not found: $LIST" >&2; exit 1; }
 
-# Breaking these was observed on TCL G08 / Android 14 (HDMI, Wi-Fi, voice, setup).
-DO_NOT_TOUCH="com.tcl.tvinput com.tcl.tv com.tcl.suspension com.tcl.providers.config
-com.tcl.initsetup com.tcl.factory.view com.google.android.tv.remote.service
-com.google.android.katniss com.tcl.gamebar com.google.android.apps.tv.launcherx
-com.google.android.tungsten.setupwraith com.google.android.gms com.android.systemui"
+DNT_FILE=$(dirname "$0")/lists/do-not-touch.txt
+[ -f "$DNT_FILE" ] || { echo "do-not-touch list not found: $DNT_FILE" >&2; exit 1; }
+DO_NOT_TOUCH=$(sed 's/#.*//; s/[[:space:]]//g; /^$/d' "$DNT_FILE")
 
-"$ADB" -s "$SERIAL" get-state >/dev/null || { echo "device $SERIAL not reachable" >&2; exit 1; }
+reachable() { "$ADB" -s "$SERIAL" get-state >/dev/null 2>&1; }
+lost() { echo "device $SERIAL not reachable; stopped at $1" >&2; exit 1; }
+
+reachable || { echo "device $SERIAL not reachable" >&2; exit 1; }
 [ "$APPLY" -eq 1 ] || echo "DRY RUN (add --apply to change the device)"
 
+failed=0; refused=0
 while IFS= read -r p || [ -n "$p" ]; do
   p=$(printf '%s' "$p" | sed 's/#.*//; s/[[:space:]]//g')
   [ -n "$p" ] || continue
   for d in $DO_NOT_TOUCH; do
-    [ "$p" = "$d" ] && { echo "REFUSED (do-not-touch): $p"; continue 2; }
+    [ "$p" = "$d" ] && { echo "REFUSED (do-not-touch): $p"; refused=$((refused + 1)); continue 2; }
   done
+  # An adb error also prints no "package:" line, so rule out a lost device
+  # before calling the package missing.
   if ! "$ADB" -s "$SERIAL" shell -n pm path "$p" 2>/dev/null | tr -d '\r' | grep -q '^package:'; then
+    reachable || lost "$p"
     echo "skip (not installed for user 0): $p"; continue
   fi
   if [ "$APPLY" -eq 0 ]; then
@@ -68,8 +73,16 @@ while IFS= read -r p || [ -n "$p" ]; do
     *Success*|*"new state: disabled"*)
       mkdir -p "$RECORD_DIR"
       grep -qx "$p" "$RECORD" 2>/dev/null || echo "$p" >> "$RECORD" ;;
+    *)
+      reachable || lost "$p"
+      failed=$((failed + 1)) ;;
   esac
 done < "$LIST"
 
-[ "$APPLY" -eq 1 ] && echo "Recorded in $RECORD. Reboot, re-measure, and re-check package state."
+[ "$refused" -eq 0 ] || echo "$refused package(s) refused (do-not-touch)."
+[ "$APPLY" -eq 0 ] || echo "Recorded in $RECORD. Reboot, re-measure, and re-check package state."
+if [ "$failed" -gt 0 ]; then
+  echo "$failed package(s) failed; review the output above." >&2
+  exit 1
+fi
 exit 0

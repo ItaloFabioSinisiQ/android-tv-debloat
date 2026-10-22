@@ -48,5 +48,12 @@ The work was done interactively and lives in a private Obsidian note, local back
 - Docs: duplicated package reference in the skill, table legend wording, name the HDMI-permission packages explicitly.
 - Add committed tests for the do-not-touch guard (fake `adb`).
 
+## Phase 2 (authorized 2026-10-21: publish as a public GitHub repo if it holds no personal data)
+- [x] T4 Picture calibration without a colorimeter: doc, pattern generator script, skill section (route: delegated writer)
+- [x] T5 Fix the non-blocking review WARNINGs in `scripts/` (route: same writer)
+  - Evidence: `sh tests/run.sh` RED 23 passed / 9 failed before the fixes, GREEN 34 passed / 0 failed after; parent re-ran GREEN. `shellcheck` clean; `patterns.py` writes 8 files.
+  - Not run on a device: `show-pattern.sh`, the MediaStore cleanup filter.
+- [ ] T6 Rewrite commit identity to the GitHub noreply address, privacy scan of tree and full history, single `main` branch, public repo (route: inline)
+
 ## Next step
-User decides: fix the follow-ups, translate, or publish (push/PR remain user decisions).
+T4–T6.

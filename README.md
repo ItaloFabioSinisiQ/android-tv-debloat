@@ -57,14 +57,14 @@ Requirements: Android platform-tools (`adb`) on macOS, Linux or Windows (WSL or 
 4. Review [the package reference](docs/packages-tcl-g08.md), then preview a batch (dry run is the default):
 
    ```sh
-   scripts/debloat.sh <TV_IP>:<PORT> scripts/lists/tcl-g08-disable.txt --method disable
+   scripts/debloat.sh <TV_IP>:<PORT> scripts/lists/tcl-g08-disable.txt --method disable --record-dir revert-lists
    ```
 
 5. Apply with `--apply`, reboot, re-measure, and check that every package stayed in the state you set.
 6. Undo everything at any time:
 
    ```sh
-   scripts/revert.sh <TV_IP>:<PORT>
+   scripts/revert.sh <TV_IP>:<PORT> revert-lists
    ```
 
 7. Turn **Wireless debugging** off when you are done.
@@ -78,7 +78,8 @@ The full explanation, including why each step exists, is in the [guide](docs/gui
 | [Guide](docs/guide.md) | Concepts, setup, backup, measurement, changes, verification, revert |
 | [TCL G08 package reference](docs/packages-tcl-g08.md) | Every package touched, what you lose, risk, and the do-not-touch list |
 | [Lessons learned](docs/lessons-learned.md) | Pitfalls and negative results, with numbers |
-| [Scripts](scripts/) | `connect.sh`, `backup.sh`, `measure.sh`, `debloat.sh`, `revert.sh`, example lists |
+| [Picture tuning without a colorimeter](docs/picture-calibration.md) | Choosing the most accurate preset, checking black level and white clipping with test patterns |
+| [Scripts](scripts/) | `connect.sh`, `backup.sh`, `measure.sh`, `debloat.sh`, `revert.sh`, `patterns.py`, `show-pattern.sh`, package lists |
 
 ## Use it with an AI agent
 
@@ -95,6 +96,16 @@ mkdir -p .claude/skills && cp -R skills/android-tv-debloat .claude/skills/
 ```
 
 Other agents that support the `SKILL.md` format (for example OpenCode, Codex or Gemini CLI setups) load skills from their own directories; copy the same folder there. Agents without skill support can be given `SKILL.md` as plain instructions.
+
+## Tests
+
+The scripts have offline tests that run against a fake `adb`, so no TV is needed:
+
+```sh
+sh tests/run.sh
+```
+
+They check the do-not-touch guard, dry run, revert lists, failure exit codes, a lost device, and that the do-not-touch list in [`scripts/lists/do-not-touch.txt`](scripts/lists/do-not-touch.txt) matches the docs.
 
 ## License
 

@@ -1,16 +1,20 @@
 # Package reference: TCL G08 board (Android 14)
 
+<!-- copy-specific: bundled copy of docs/packages-tcl-g08.md. Keep identical except lines marked copy-specific; tests/run.sh checks it. -->
+
 Observed on a TCL 65C6K (Google TV, Android 14, product `G08_4K_GB`) on 2026-10-20 and 2026-10-21. Other TCL boards and firmware versions may name, bundle or depend on these packages differently. Check that a package exists on your TV (`adb shell pm path <pkg>`) and read its row before touching it.
 
 ## How to read this table
 
 | Column | Meaning |
 |--------|---------|
-| Action | **disabled**: `pm disable-user --user 0`, stayed disabled across reboots. **uninstalled-for-user**: `pm uninstall -k --user 0`, because the firmware re-enabled it at boot. **kept**: evaluated and left alone. **NEVER touch**: breaks core TV functions. |
-| Risk | **Low**: no loss for most users. **Medium**: removes a feature some people use, or holds hardware-related permissions. **High**: reported to break something essential. |
-| RAM | Approximate resident memory where it was measured (`dumpsys -t 60 meminfo`). |
+| Action | **disabled**: `pm disable-user --user 0`, stayed disabled across reboots. **uninstalled-for-user**: `pm uninstall -k --user 0`, because the firmware re-enabled it at boot. |
+| Risk | **Low**: no loss for most users. **Medium**: removes a feature some people use, or holds hardware-related permissions. |
+| Sizes such as (~78 MB) | Approximate resident memory, where it was measured (`dumpsys -t 60 meminfo`). |
 
-Copy of `docs/packages-tcl-g08.md` from the android-tv-debloat repository, bundled so the skill works standalone. The repository also ships batch files under `scripts/lists/`.
+Packages that were evaluated and left alone are in [Kept on purpose](#kept-on-purpose). Packages that break core TV functions are not in the batch tables at all: they are in [Do not touch](#do-not-touch).
+
+Copy of `docs/packages-tcl-g08.md` from the android-tv-debloat repository, bundled so the skill works standalone. The repository also ships batch files and the enforced do-not-touch list under `scripts/lists/`. <!-- copy-specific -->
 
 ## Batch 1: disabled (persisted with `pm disable-user`)
 
@@ -52,7 +56,7 @@ Copy of `docs/packages-tcl-g08.md` from the android-tv-debloat repository, bundl
 | `com.android.tv.feedbackconsent` | Feedback consent | Nothing visible | Low | uninstalled-for-user |
 
 > [!WARNING]
-> Six packages in this batch hold `TV_INPUT_HARDWARE` or `HDMI_CEC` permissions and run with the system UID. HDMI inputs on this board are served by `com.tcl.tvinput`, so removing them did not affect HDMI here, but **test every HDMI input after this batch**.
+> Six packages in this batch hold `TV_INPUT_HARDWARE` or `HDMI_CEC` permissions and run with the system UID: `com.tcl.ttvs`, `com.tcl.miracast`, `com.tcl.interactive`, `com.tcl.guard`, `com.tcl.UpdatePeripheral` and `com.android.tv.feedbackconsent`. HDMI inputs on this board are served by `com.tcl.tvinput`, so removing them did not affect HDMI here, but **test every HDMI input after this batch**.
 
 > [!NOTE]
 > `com.tcl.ttvs` was first believed to handle system updates. It does not: on this TV the system update screen resolves to `com.google.android.gms/.update.SystemUpdatePanoActivity`. Check yours with `adb shell cmd package resolve-activity --brief -a android.settings.SYSTEM_UPDATE_SETTINGS`.
@@ -92,8 +96,10 @@ Breaking any of these was observed on the reference TV or reported for this boar
 | `com.tcl.gamebar` | Game bar and HDMI game-mode handling for consoles. It was disabled by mistake once and re-enabled |
 | `com.google.android.apps.tv.launcherx` | No home screen unless another launcher is installed |
 | `com.google.android.tungsten.setupwraith` | Google TV setup wizard. Not tested; removing setup components risks a TV that cannot complete setup after a reset |
+| `com.google.android.gms` | Google Play services. Not tested; almost everything depends on it, including system updates, sign-in and casting |
+| `com.android.systemui` | Android system UI. Not tested; dialogs, notifications and system overlays stop working |
 
-`scripts/debloat.sh` refuses every package in this list.
+`scripts/debloat.sh` refuses every package in this list. The script reads it from `scripts/lists/do-not-touch.txt`; keep both in step.
 
 ## Related settings tried and reverted
 

@@ -184,12 +184,19 @@ adb shell settings get global private_dns_mode
 adb shell settings get secure screensaver_enabled
 ```
 
-Keep two revert lists next to the backup and append to them as you work:
+The backup and the revert lists are two different things:
+
+| Folder | Written by | Contents | Used for |
+|--------|------------|----------|----------|
+| Backup folder (`backup-YYYYMMDD-HHMMSS/`, or the `OUT_DIR` you pass) | `scripts/backup.sh`, once, before any change | Package lists, settings, device properties | Proving what changed; restoring settings by hand |
+| Record folder (`--record-dir`, default: the current directory) | `scripts/debloat.sh --apply`, every batch | `disabled_by_us.txt`, `uninstalled_by_us.txt` | `scripts/revert.sh` |
+
+The revert lists hold:
 
 - `disabled_by_us.txt`: every package you disable with `pm disable-user`.
 - `uninstalled_by_us.txt`: every package you remove with `pm uninstall -k --user 0`.
 
-`scripts/debloat.sh` maintains these automatically; `scripts/revert.sh` reads them.
+Use one fixed record folder for the whole session, for example `--record-dir revert-lists`, and pass the same folder to `scripts/revert.sh`. If you work by hand, append to these files yourself.
 
 ## 7. Measure a baseline
 
@@ -270,22 +277,22 @@ Revert: `adb shell settings put secure screensaver_enabled 1`.
 3. Preview, then apply:
 
    ```sh
-   scripts/debloat.sh <TV_IP>:<PORT> my-batch.txt --method disable           # dry run
-   scripts/debloat.sh <TV_IP>:<PORT> my-batch.txt --method disable --apply
+   scripts/debloat.sh <TV_IP>:<PORT> my-batch.txt --method disable --record-dir revert-lists          # dry run
+   scripts/debloat.sh <TV_IP>:<PORT> my-batch.txt --method disable --record-dir revert-lists --apply
    ```
 
    Manual equivalent, one package at a time:
 
    ```sh
    adb shell pm disable-user --user 0 <pkg>
-   echo <pkg> >> disabled_by_us.txt
+   mkdir -p revert-lists && echo <pkg> >> revert-lists/disabled_by_us.txt
    ```
 
 4. Reboot and check the state (step 9). If the firmware re-enabled them, remove them for the user instead:
 
    ```sh
-   scripts/debloat.sh <TV_IP>:<PORT> my-batch.txt --method uninstall --apply
-   # manual: adb shell pm uninstall -k --user 0 <pkg>; echo <pkg> >> uninstalled_by_us.txt
+   scripts/debloat.sh <TV_IP>:<PORT> my-batch.txt --method uninstall --record-dir revert-lists --apply
+   # manual: adb shell pm uninstall -k --user 0 <pkg>; echo <pkg> >> revert-lists/uninstalled_by_us.txt
    ```
 
 Revert one package: `adb shell pm enable --user 0 <pkg>` or `adb shell cmd package install-existing --user 0 <pkg>`.
@@ -358,11 +365,11 @@ If anything fails, revert the last batch first (step 11), then retry with a smal
 Everything at once:
 
 ```sh
-scripts/revert.sh <TV_IP>:<PORT> <FOLDER_WITH_REVERT_LISTS>
+scripts/revert.sh <TV_IP>:<PORT> revert-lists     # the folder passed as --record-dir
 adb reboot
 ```
 
-It runs `cmd package install-existing --user 0` for every line in `uninstalled_by_us.txt`, then `pm enable --user 0` for every line in `disabled_by_us.txt`. Settings are reverted with the commands in step 8 and the values from your backup. A factory reset also restores everything, but erases your accounts and apps.
+It runs `cmd package install-existing --user 0` for every line in `uninstalled_by_us.txt`, then `pm enable --user 0` for every line in `disabled_by_us.txt`. It exits with an error if neither file is in the folder. Settings are reverted with the commands in step 8 and the values from your backup. A factory reset also restores everything, but erases your accounts and apps.
 
 ## 12. Finish and maintain
 
@@ -372,3 +379,5 @@ It runs `cmd package install-existing --user 0` for every line in `uninstalled_b
 4. After a firmware update, re-check package state (step 10): updates can restore removed packages or reset states.
 
 If the TV is still slow after this, the hardware is the limit. An external streaming device with 4 GB of RAM or more, with the TV used only as a display, is the real fix.
+
+To tune the picture as well, see [picture tuning without a colorimeter](picture-calibration.md).

@@ -16,6 +16,11 @@ DIR=${2:-.}
 ADB=${ADB:-adb}
 fail=0
 
+if [ ! -f "$DIR/uninstalled_by_us.txt" ] && [ ! -f "$DIR/disabled_by_us.txt" ]; then
+  echo "no revert list found in $DIR (expected uninstalled_by_us.txt or disabled_by_us.txt)" >&2
+  echo "pass the folder used as --record-dir with scripts/debloat.sh" >&2
+  exit 1
+fi
 "$ADB" -s "$SERIAL" get-state >/dev/null || { echo "device $SERIAL not reachable" >&2; exit 1; }
 
 # `shell -n` is required: without it adb reads the loop's stdin and only the
