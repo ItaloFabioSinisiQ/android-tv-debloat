@@ -53,7 +53,14 @@ The work was done interactively and lives in a private Obsidian note, local back
 - [x] T5 Fix the non-blocking review WARNINGs in `scripts/` (route: same writer)
   - Evidence: `sh tests/run.sh` RED 23 passed / 9 failed before the fixes, GREEN 34 passed / 0 failed after; parent re-ran GREEN. `shellcheck` clean; `patterns.py` writes 8 files.
   - Not run on a device: `show-pattern.sh`, the MediaStore cleanup filter.
-- [ ] T6 Rewrite commit identity to the GitHub noreply address, privacy scan of tree and full history, single `main` branch, public repo (route: inline)
+- [x] T6 Rewrite commit identity to the GitHub noreply address, privacy scan of tree and full history, single `main` branch, public repo (route: inline)
+  - Native review of T4–T5: high risk, consent granted, 4 lenses, approved and acknowledged (lineage `review-5e8c2cdaf9b7a30e`).
+  - The commit author was the local machine address; rewritten to the GitHub noreply address. Only `main` is published.
+
+## Follow-ups (non-blocking findings from the second review)
+- `scripts/debloat.sh`: the do-not-touch guard fails open when the list file is empty (it should refuse to run); the "recorded" message is misleading.
+- `scripts/show-pattern.sh`: `adb push`/`am start` failures are silent; remote shell quoting; the cleanup path is duplicated; the viewer note prints unconditionally.
+- `tests/run.sh`: no coverage for `show-pattern.sh` and `patterns.py`.
 
 ## Next step
-T4–T6.
+Fix the follow-ups above; push, PRs and releases remain the owner's decisions.
