@@ -1,10 +1,10 @@
 <div align="center">
 
-<img src="docs/assets/banner.svg" alt="android-tv-debloat: measured, reversible tuning for low-RAM Android TVs" width="100%">
+<img src="docs/assets/banner.svg" alt="android-tv-debloat: optimización medida y reversible para Android TV con poca RAM" width="100%">
 
 # Android TV debloat
 
-**Make a low-RAM Google TV / Android TV faster and quieter over ADB: no root, measured, and fully reversible.**
+**Haz que un Google TV / Android TV con poca RAM sea más rápido y silencioso mediante ADB: sin root, con mediciones y totalmente reversible.**
 
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue)](LICENSE)
 [![Android TV / Google TV](https://img.shields.io/badge/Android%20TV%20%2F%20Google%20TV-Android%2014-3DDC84?logo=android&logoColor=white)](docs/guide.md)
@@ -13,121 +13,125 @@
 [![Tests](https://img.shields.io/badge/tests-34%20passing-brightgreen)](tests/run.sh)
 [![AI agent skill](https://img.shields.io/badge/AI%20agent-skill-8A2BE2)](skills/android-tv-debloat/SKILL.md)
 
-[Why](#-why) · [Results](#-results) · [Features](#-features) · [Quick start](#-quick-start) · [AI agent](#-use-with-an-ai-agent) · [Safety](#-safety) · [Picture tuning](#-picture-tuning) · [FAQ](#-faq-and-more) · [Contributing](#-contributing)
+**Español** · [English](README.en.md)
+
+[Por qué](#-por-qué) · [Resultados](#-resultados) · [Características](#-características) · [Inicio rápido](#-inicio-rápido) · [Agente de IA](#-uso-con-un-agente-de-ia) · [Seguridad](#-seguridad) · [Ajuste de imagen](#-ajuste-de-imagen) · [Preguntas frecuentes](#-preguntas-frecuentes-y-más) · [Contribuir](#-contribuir)
 
 </div>
 
 ---
 
-## 🤔 Why
+## 🤔 Por qué
 
-A step-by-step guide, helper scripts and an AI-agent skill for one problem: budget smart TVs that feel slow out of the box.
+Una guía paso a paso, scripts de apoyo y un skill para agentes de IA, enfocados en un solo problema: los televisores inteligentes económicos que se sienten lentos desde el primer día.
 
-- **2.4 GB of RAM is not enough.** After days of uptime the reference TV had 528 MB available and its zram swap was 96% full, so apps cold-started again and again.
-- **Vendor bloat stays resident.** Promotional overlays, channel apps and vendor services run in the background and compete for that RAM.
-- **The firmware fights back.** Packages disabled with `pm disable-user` came back enabled after a reboot; only `pm uninstall -k --user 0` persisted.
+- **2.4 GB de RAM no son suficientes.** Tras varios días encendido, el televisor de referencia tenía 528 MB disponibles y su swap zram estaba lleno al 96 %, por lo que las apps volvían a hacer arranque en frío una y otra vez.
+- **El bloatware del fabricante permanece residente.** Superposiciones promocionales, apps de canales y servicios del fabricante se ejecutan en segundo plano y compiten por esa RAM.
+- **El firmware se resiste.** Los paquetes desactivados con `pm disable-user` volvían a habilitarse después de reiniciar; solo `pm uninstall -k --user 0` se mantuvo.
 
-Reference device: **TCL 65C6K** (Google TV, Android 14, TCL G08 board, MediaTek quad-core up to 1.39 GHz, 2.4 GB RAM, 917 MB zram). The method applies to any Android TV that allows wireless debugging; the package lists are specific to that board.
+Dispositivo de referencia: **TCL 65C6K** (Google TV, Android 14, placa TCL G08, MediaTek de cuatro núcleos hasta 1.39 GHz, 2.4 GB de RAM, 917 MB de zram). El método sirve para cualquier Android TV que permita la depuración inalámbrica; las listas de paquetes son específicas de esa placa.
 
-## 📊 Results
+## 📊 Resultados
 
-Measured with [`scripts/measure.sh`](scripts/measure.sh) on the reference TV, before and 4 minutes after a reboot (2026-10-21).
+Medido con [`scripts/measure.sh`](scripts/measure.sh) en el televisor de referencia, antes y 4 minutos después de un reinicio (2026-10-21).
 
-| Metric | Before (up for days) | After reboot | Change |
+| Métrica | Antes (encendido varios días) | Después del reinicio | Cambio |
 |--------|---------------------|--------------|--------|
-| RAM available (`MemAvailable`) | 528 MB `█████░░░░░` | 1031 MB `██████████` | **+95%** |
-| Swap (zram) used | 96% `██████████` | 44% `████░░░░░░` | **−52 pts** |
+| RAM disponible (`MemAvailable`) | 528 MB `█████░░░░░` | 1031 MB `██████████` | **+95 %** |
+| Swap (zram) en uso | 96 % `██████████` | 44 % `████░░░░░░` | **−52 pts** |
 
-Cold starts in ms (runs 1 / 2 / 3; run 1 is the coldest):
+Arranques en frío en ms (ejecuciones 1 / 2 / 3; la ejecución 1 es la más fría):
 
-| App | Before | After | Run 1 change |
+| App | Antes | Después | Cambio en la ejecución 1 |
 |-----|--------|-------|--------------|
-| Netflix | 1146 / 484 / 477 | 643 / 481 / 410 | −44% |
-| YouTube | 1000 / 609 / 623 | 859 / 602 / 482 | −14% |
-| Max | 1051 / 763 / 616 | 1061 / 535 / 549 | +1% |
-| Prime Video | 940 / 644 / 602 | 890 / 555 / 570 | −5% |
+| Netflix | 1146 / 484 / 477 | 643 / 481 / 410 | −44 % |
+| YouTube | 1000 / 609 / 623 | 859 / 602 / 482 | −14 % |
+| Max | 1051 / 763 / 616 | 1061 / 535 / 549 | +1 % |
+| Prime Video | 940 / 644 / 602 | 890 / 555 / 570 | −5 % |
 
 > [!IMPORTANT]
-> **Be honest about the cause.** Most of this gain came from the **reboot**, not from debloating: at the "after" measurement the firmware had silently re-enabled the 13 newly disabled packages. The fix was to switch those to `pm uninstall -k --user 0`, which survived later reboots. See [lessons learned](docs/lessons-learned.md).
+> **Sé honesto sobre la causa.** La mayor parte de esta mejora vino del **reinicio**, no del debloat: en la medición "después", el firmware había vuelto a habilitar en silencio los 13 paquetes recién desactivados. La solución fue cambiarlos a `pm uninstall -k --user 0`, que sobrevivió a los reinicios posteriores. Consulta las [lecciones aprendidas](docs/lessons-learned.md).
 
-| Other change | Effect observed |
+| Otro cambio | Efecto observado |
 |--------------|-----------------|
-| Removing resident bloat (29 packages) | Less RAM pressure; persisted only after switching 13 of them to `uninstall -k --user 0` |
-| AdGuard Private DNS | Ad and tracker domains blocked system-wide (not YouTube or in-app ad tiers) |
-| Animations set to 0 | Menus and transitions respond instantly (not measured separately) |
-| Full AOT compile (`speed`) | ❌ **Slower**: Netflix 557 → 674 ms, YouTube 621 → 856 ms (reverted) |
+| Eliminar bloatware residente (29 paquetes) | Menos presión sobre la RAM; persistió solo después de cambiar 13 de ellos a `uninstall -k --user 0` |
+| DNS privado de AdGuard | Dominios de anuncios y rastreadores bloqueados en todo el sistema (no en YouTube ni en los planes con anuncios dentro de las apps) |
+| Animaciones en 0 | Los menús y las transiciones responden al instante (no se midió por separado) |
+| Compilación AOT completa (`speed`) | ❌ **Más lento**: Netflix 557 → 674 ms, YouTube 621 → 856 ms (revertido) |
 
-RAM is the hard limit. On a 2.4 GB TV, the real fix is an external streaming device with 4 GB of RAM or more.
+La RAM es el límite real. En un televisor de 2.4 GB, la verdadera solución es un dispositivo de streaming externo con 4 GB de RAM o más.
 
-## ✨ Features
+## ✨ Características
 
-| | Feature | What you get |
+| | Característica | Qué obtienes |
 |---|---------|--------------|
-| 📘 | [Guide](docs/guide.md) | Concepts, setup, backup, measurement, changes, verification and revert, step by step |
-| 📦 | [Package reference](docs/packages-tcl-g08.md) | Every package touched on the TCL G08 board: what you lose, risk, and the do-not-touch list |
-| 🎨 | [Picture tuning](docs/picture-calibration.md) | Most accurate preset plus black-level and white-clipping checks with test patterns |
-| 🤖 | [AI agent skill](skills/android-tv-debloat/SKILL.md) | The same workflow and safety rules, packaged for Claude Code and other agents |
-| 🛠️ | [Scripts](scripts/) | `connect`, `backup`, `measure`, `debloat` (dry run by default), `revert`, `patterns.py`, `show-pattern` |
-| ✅ | [Tests](tests/run.sh) | 34 offline checks against a fake `adb`; no TV needed |
+| 📘 | [Guía](docs/guide.md) | Conceptos, configuración, respaldo, medición, cambios, verificación y reversión, paso a paso |
+| 📦 | [Referencia de paquetes](docs/packages-tcl-g08.md) | Cada paquete modificado en la placa TCL G08: qué se pierde, el riesgo y la lista de paquetes que no se deben tocar |
+| 🎨 | [Ajuste de imagen](docs/picture-calibration.md) | El preajuste más preciso, además de comprobaciones de nivel de negro y recorte de blancos con patrones de prueba |
+| 🤖 | [Skill para agentes de IA](skills/android-tv-debloat/SKILL.md) | El mismo flujo de trabajo y las mismas reglas de seguridad, empaquetados para Claude Code y otros agentes |
+| 🛠️ | [Scripts](scripts/) | `connect`, `backup`, `measure`, `debloat` (simulación por defecto), `revert`, `patterns.py`, `show-pattern` |
+| ✅ | [Pruebas](tests/run.sh) | 34 comprobaciones sin conexión contra un `adb` simulado; no se necesita el televisor |
 
-### How it works
+> La documentación detallada está en inglés.
+
+### Cómo funciona
 
 ```mermaid
 flowchart LR
-    A[Pair and connect<br/>over wireless ADB] --> B[Back up and<br/>measure baseline]
-    B --> C[Apply ONE batch<br/>and record it]
-    C --> D[Reboot and<br/>re-measure]
-    D --> E{Packages stayed<br/>and features work?}
-    E -- yes --> F{More batches?}
-    F -- yes --> C
-    E -- re-enabled --> G[Switch to<br/>uninstall -k --user 0]
+    A[Vincular y conectar<br/>por ADB inalámbrico] --> B[Respaldar y<br/>medir línea base]
+    B --> C[Aplicar UN lote<br/>y registrarlo]
+    C --> D[Reiniciar y<br/>volver a medir]
+    D --> E{¿Siguen desactivados<br/>y todo funciona?}
+    E -- sí --> F{¿Más lotes?}
+    F -- sí --> C
+    E -- reactivados --> G[Cambiar a<br/>uninstall -k --user 0]
     G --> D
-    E -- broken --> H[Revert the batch]
+    E -- algo falla --> H[Revertir el lote]
     H --> C
-    F -- no --> I[Turn off<br/>Wireless debugging]
+    F -- no --> I[Apagar la<br/>depuración inalámbrica]
 ```
 
-## 🚀 Quick start
+## 🚀 Inicio rápido
 
-**Requirements:** Android platform-tools (`adb`, version 30 or newer for wireless pairing) on macOS, Linux or Windows (WSL or Git Bash for the scripts), with the computer and TV on the same network.
+**Requisitos:** Android platform-tools (`adb`, versión 30 o posterior para el emparejamiento inalámbrico) en macOS, Linux o Windows (WSL o Git Bash para los scripts), con la computadora y el televisor en la misma red.
 
-1. **Enable debugging on the TV.** **Settings › System › About**, press **Android TV OS build** 7 times. Then **Settings › System › Developer options** › turn on **Wireless debugging**.
+1. **Activa la depuración en el televisor.** En **Ajustes › Sistema › Información**, presiona **Compilación del SO de Android TV** 7 veces. Luego, en **Ajustes › Sistema › Opciones de desarrollador**, activa **Depuración inalámbrica**.
 
-2. **Pair once, then connect.**
+2. **Empareja una vez y luego conéctate.**
 
    ```sh
    adb pair <TV_IP>:<PAIRING_PORT> <SIX_DIGIT_CODE>
    scripts/connect.sh            # finds the TV via mDNS and connects
    ```
 
-3. **Back up and measure before changing anything.**
+3. **Haz un respaldo y mide antes de cambiar cualquier cosa.**
 
    ```sh
    scripts/backup.sh  <TV_IP>:<PORT>
    scripts/measure.sh <TV_IP>:<PORT>
    ```
 
-4. **Review the [package reference](docs/packages-tcl-g08.md), then preview a batch** (dry run is the default).
+4. **Revisa la [referencia de paquetes](docs/packages-tcl-g08.md) y luego previsualiza un lote** (la simulación es el modo por defecto).
 
    ```sh
    scripts/debloat.sh <TV_IP>:<PORT> scripts/lists/tcl-g08-disable.txt --method disable --record-dir revert-lists
    ```
 
-5. **Apply, reboot, re-measure.** Re-run the same command with `--apply`, reboot, run `measure.sh` again, and check that every package stayed in the state you set. Packages the firmware re-enabled go through `--method uninstall` (see [`tcl-g08-uninstall.txt`](scripts/lists/tcl-g08-uninstall.txt)).
+5. **Aplica, reinicia y vuelve a medir.** Ejecuta el mismo comando con `--apply`, reinicia, vuelve a ejecutar `measure.sh` y comprueba que cada paquete siga en el estado que definiste. Los paquetes que el firmware vuelva a habilitar se procesan con `--method uninstall` (consulta [`tcl-g08-uninstall.txt`](scripts/lists/tcl-g08-uninstall.txt)).
 
-6. **Undo everything at any time.**
+6. **Deshaz todo en cualquier momento.**
 
    ```sh
    scripts/revert.sh <TV_IP>:<PORT> revert-lists
    ```
 
-7. **Turn Wireless debugging off** when you are done.
+7. **Desactiva la Depuración inalámbrica** cuando termines.
 
-Run `sh tests/run.sh` to check the scripts offline. The [guide](docs/guide.md) explains why each step exists.
+Ejecuta `sh tests/run.sh` para comprobar los scripts sin conexión. La [guía](docs/guide.md) explica por qué existe cada paso.
 
-## 🤖 Use with an AI agent
+## 🤖 Uso con un agente de IA
 
-[`skills/android-tv-debloat/`](skills/android-tv-debloat/SKILL.md) encodes the same workflow for an AI coding agent: it asks before every state-changing command, backs up and measures first, applies one batch at a time, never touches the critical packages, and reports gains honestly.
+[`skills/android-tv-debloat/`](skills/android-tv-debloat/SKILL.md) codifica el mismo flujo de trabajo para un agente de programación con IA: pide confirmación antes de cada comando que cambia el estado, hace un respaldo y mide primero, aplica un lote a la vez, nunca toca los paquetes críticos e informa las mejoras con honestidad.
 
 ```sh
 # Claude Code (user-wide)
@@ -137,88 +141,88 @@ cp -R skills/android-tv-debloat ~/.claude/skills/
 mkdir -p .claude/skills && cp -R skills/android-tv-debloat .claude/skills/
 ```
 
-Other agents that support the `SKILL.md` format (for example OpenCode, Codex or Gemini CLI setups) load skills from their own directories; copy the same folder there. Agents without skill support can be given `SKILL.md` as plain instructions.
+Otros agentes compatibles con el formato `SKILL.md` (por ejemplo, configuraciones de OpenCode, Codex o Gemini CLI) cargan los skills desde sus propios directorios; copia ahí la misma carpeta. A los agentes sin soporte para skills se les puede entregar `SKILL.md` como instrucciones en texto plano.
 
-Sample prompt:
+Ejemplo de prompt:
 
 ```text
-My Google TV is slow. Wireless debugging is on and the TV is at <TV_IP>.
-Use the android-tv-debloat skill: back up and measure first, then propose
-one batch of packages to disable. Do not change anything without asking me.
+Mi Google TV está lenta. La depuración inalámbrica está activa y la TV está en <TV_IP>.
+Usa el skill android-tv-debloat: primero respalda y mide, luego propón
+un lote de paquetes para desactivar. No cambies nada sin preguntarme.
 ```
 
-## 🚨 Safety
+## 🚨 Seguridad
 
 > [!WARNING]
-> **Use at your own risk.** Vendor firmware differs between brands, boards and even firmware versions. A package that is safe to remove on one TV can break HDMI, Wi-Fi or voice search on another. Every change here is reversible without a factory reset, but only if you take the backup first and keep the revert lists. Nothing here is endorsed by TCL, Google or any vendor.
+> **Úsalo bajo tu propio riesgo.** El firmware de cada fabricante varía entre marcas, placas e incluso versiones de firmware. Un paquete que es seguro eliminar en un televisor puede dañar el HDMI, el Wi-Fi o la búsqueda por voz en otro. Todos los cambios aquí son reversibles sin restablecer de fábrica, pero solo si haces el respaldo primero y conservas las listas de reversión. Nada de esto está respaldado por TCL, Google ni ningún fabricante.
 
 > [!CAUTION]
-> **Never remove these on the TCL G08 board** (full list and consequences in the [package reference](docs/packages-tcl-g08.md#do-not-touch)):
+> **Nunca elimines estos paquetes en la placa TCL G08** (lista completa y consecuencias en la [referencia de paquetes](docs/packages-tcl-g08.md#do-not-touch)):
 >
-> - `com.tcl.tvinput`, `com.tcl.tv`, `com.tcl.suspension`: HDMI inputs show "No Signal"
-> - `com.tcl.providers.config`, `com.tcl.initsetup`, `com.tcl.factory.view`: Wi-Fi drops, which also cuts wireless ADB
-> - `com.google.android.tv.remote.service`, `com.google.android.katniss`: the remote's mic and voice search stop working
-> - `com.google.android.apps.tv.launcherx`, `com.google.android.gms`, `com.android.systemui`: home screen, Play services, system UI
+> - `com.tcl.tvinput`, `com.tcl.tv`, `com.tcl.suspension`: las entradas HDMI muestran "Sin señal"
+> - `com.tcl.providers.config`, `com.tcl.initsetup`, `com.tcl.factory.view`: se cae el Wi-Fi, lo que también corta el ADB inalámbrico
+> - `com.google.android.tv.remote.service`, `com.google.android.katniss`: el micrófono del control remoto y la búsqueda por voz dejan de funcionar
+> - `com.google.android.apps.tv.launcherx`, `com.google.android.gms`, `com.android.systemui`: pantalla de inicio, servicios de Play, interfaz del sistema
 >
-> `scripts/debloat.sh` refuses every package in [`scripts/lists/do-not-touch.txt`](scripts/lists/do-not-touch.txt). Treat unknown vendor packages as unknown, not as bloat.
+> `scripts/debloat.sh` rechaza todos los paquetes de [`scripts/lists/do-not-touch.txt`](scripts/lists/do-not-touch.txt). Trata los paquetes desconocidos del fabricante como desconocidos, no como bloatware.
 
-## 🎨 Picture tuning
+## 🎨 Ajuste de imagen
 
-No colorimeter? You can still get close: pick the most accurate preset (**FILMMAKER MODE** on the reference TV), then check black level and white clipping by eye. Generate the patterns with `python3 scripts/patterns.py patterns/` (needs Pillow) and show them from a USB stick, a casting app, or over ADB with [`scripts/show-pattern.sh`](scripts/show-pattern.sh) (TCL viewer by default).
+¿No tienes colorímetro? Aun así puedes acercarte bastante: elige el preajuste más preciso (**Imagen › Modo de imagen › FILMMAKER MODE** en el televisor de referencia) y luego comprueba a simple vista el nivel de negro y el recorte de blancos. Genera los patrones con `python3 scripts/patterns.py patterns/` (requiere Pillow) y muéstralos desde una memoria USB, una app de transmisión o mediante ADB con [`scripts/show-pattern.sh`](scripts/show-pattern.sh) (usa el visor de TCL por defecto).
 
-| Black level | White clipping | Grayscale | Sharpness |
+| Nivel de negro | Recorte de blancos | Escala de grises | Nitidez |
 |:-----------:|:--------------:|:---------:|:---------:|
-| <img src="docs/assets/patterns/black-level.png" alt="Black-level test pattern preview" width="200"> | <img src="docs/assets/patterns/white-clip.png" alt="White-clipping test pattern preview" width="200"> | <img src="docs/assets/patterns/grayscale.png" alt="Grayscale test pattern preview" width="200"> | <img src="docs/assets/patterns/sharpness.png" alt="Sharpness test pattern preview" width="200"> |
+| <img src="docs/assets/patterns/black-level.png" alt="Vista previa del patrón de prueba de nivel de negro" width="200"> | <img src="docs/assets/patterns/white-clip.png" alt="Vista previa del patrón de prueba de recorte de blancos" width="200"> | <img src="docs/assets/patterns/grayscale.png" alt="Vista previa del patrón de prueba de escala de grises" width="200"> | <img src="docs/assets/patterns/sharpness.png" alt="Vista previa del patrón de prueba de nitidez" width="200"> |
 
-Previews only: judge the picture with the full-size files on the TV. Full method in [picture tuning without a colorimeter](docs/picture-calibration.md).
+Son solo vistas previas: evalúa la imagen con los archivos a tamaño completo en el televisor. El método completo está en [ajuste de imagen sin colorímetro](docs/picture-calibration.md).
 
-## 📚 FAQ and more
+## 📚 Preguntas frecuentes y más
 
 <details>
-<summary><b>Will this break Netflix, HDMI or voice search?</b></summary>
+<summary><b>¿Esto dañará Netflix, el HDMI o la búsqueda por voz?</b></summary>
 
-Not if you stay off the do-not-touch list: HDMI, Wi-Fi, the remote's mic and voice search depend on packages that `debloat.sh` refuses to change. Netflix, YouTube, Max and Prime Video are not touched; the only streaming apps removed on the reference TV were two unused preinstalled ones, which reinstall from the Play Store. After every batch, the guide's [verification step](docs/guide.md#10-verify-nothing-broke) checks HDMI, Wi-Fi, voice and casting; if anything fails, revert the last batch first.
+No, si te mantienes alejado de la lista de paquetes que no se deben tocar: el HDMI, el Wi-Fi, el micrófono del control remoto y la búsqueda por voz dependen de paquetes que `debloat.sh` se niega a modificar. Netflix, YouTube, Max y Prime Video no se tocan; las únicas apps de streaming eliminadas en el televisor de referencia fueron dos preinstaladas que no se usaban, y se pueden reinstalar desde Play Store. Después de cada lote, el [paso de verificación](docs/guide.md#10-verify-nothing-broke) de la guía comprueba el HDMI, el Wi-Fi, la voz y la transmisión; si algo falla, revierte primero el último lote.
 
 </details>
 
 <details>
-<summary><b>Does it work on other brands?</b></summary>
+<summary><b>¿Funciona en otras marcas?</b></summary>
 
-The method (back up, measure, one batch, reboot, verify, revert) works on any Android TV that allows wireless debugging. The package lists and the do-not-touch list were built on a TCL G08 board; other boards and firmware differ, so cross-check every package on your own TV. `show-pattern.sh` defaults to the TCL image viewer; set `VIEWER=<package>/<activity>` for other brands.
-
-</details>
-
-<details>
-<summary><b>How do I revert?</b></summary>
-
-Run `scripts/revert.sh <TV_IP>:<PORT> revert-lists` with the folder you passed as `--record-dir`. It restores packages removed for user 0 (`cmd package install-existing --user 0`) and re-enables disabled ones (`pm enable --user 0`). Settings are restored from the values in your backup. Neither `disable-user` nor `uninstall -k --user 0` deletes the system APK, so no factory reset is needed.
+El método (respaldar, medir, un lote, reiniciar, verificar, revertir) funciona en cualquier Android TV que permita la depuración inalámbrica. Las listas de paquetes y la lista de paquetes que no se deben tocar se crearon en una placa TCL G08; otras placas y firmwares son distintos, así que verifica cada paquete en tu propio televisor. `show-pattern.sh` usa por defecto el visor de imágenes de TCL; define `VIEWER=<package>/<activity>` para otras marcas.
 
 </details>
 
 <details>
-<summary><b>Does it need root, or free up storage?</b></summary>
+<summary><b>¿Cómo revierto los cambios?</b></summary>
 
-No root is needed: everything runs through wireless ADB. It does not free storage either: both methods leave the APK on the system partition. The gain is RAM and background activity, not disk space.
+Ejecuta `scripts/revert.sh <TV_IP>:<PORT> revert-lists` con la carpeta que pasaste en `--record-dir`. Restaura los paquetes eliminados para el usuario 0 (`cmd package install-existing --user 0`) y vuelve a habilitar los desactivados (`pm enable --user 0`). Los ajustes se restauran con los valores de tu respaldo. Ni `disable-user` ni `uninstall -k --user 0` borran el APK del sistema, así que no hace falta restablecer de fábrica.
 
 </details>
 
 <details>
-<summary><b>Lessons learned (highlights)</b></summary>
+<summary><b>¿Necesita root o libera almacenamiento?</b></summary>
 
-| Lesson | Impact |
+No necesita root: todo se ejecuta mediante ADB inalámbrico. Tampoco libera almacenamiento: ambos métodos dejan el APK en la partición del sistema. La mejora está en la RAM y en la actividad en segundo plano, no en el espacio en disco.
+
+</details>
+
+<details>
+<summary><b>Lecciones aprendidas (lo más destacado)</b></summary>
+
+| Lección | Impacto |
 |--------|--------|
-| The firmware silently re-enabled disabled packages at boot | A "gain" was wrongly attributed to debloating |
-| A reboot is the biggest single improvement | `MemAvailable` 528 → 1031 MB |
-| Full AOT compilation made apps slower | +11% to +38% cold-start time |
-| A load average of 16 to 21 is not CPU load | CPU was ~88% idle (MediaTek kernel threads in `D` state) |
-| `adb shell` inside a loop eats the loop's input | Only the first package processed; use `adb shell -n` |
+| El firmware volvió a habilitar en silencio los paquetes desactivados al arrancar | Una "mejora" se atribuyó por error al debloat |
+| Un reinicio es la mayor mejora individual | `MemAvailable` 528 → 1031 MB |
+| La compilación AOT completa hizo más lentas las apps | De +11 % a +38 % en el tiempo de arranque en frío |
+| Una carga promedio de 16 a 21 no es carga de CPU | La CPU estaba ~88 % inactiva (hilos del kernel de MediaTek en estado `D`) |
+| `adb shell` dentro de un bucle consume la entrada del bucle | Solo se procesaba el primer paquete; usa `adb shell -n` |
 
-All ten lessons, with numbers: [docs/lessons-learned.md](docs/lessons-learned.md).
+Las diez lecciones, con cifras: [docs/lessons-learned.md](docs/lessons-learned.md).
 
 </details>
 
 <details>
-<summary><b>Repository layout</b></summary>
+<summary><b>Estructura del repositorio</b></summary>
 
 ```text
 .
@@ -239,9 +243,9 @@ All ten lessons, with numbers: [docs/lessons-learned.md](docs/lessons-learned.md
 
 </details>
 
-## 🤝 Contributing
+## 🤝 Contribuir
 
-Pull requests with **tested device reports** are welcome, especially package lists for other brands and boards. Please include:
+Las pull requests con **reportes de dispositivos probados** son bienvenidas, en especial listas de paquetes para otras marcas y placas. Incluye lo siguiente:
 
 ```text
 Device:        brand, model, board (getprop ro.product.board)
@@ -253,8 +257,8 @@ Before/after:  measure.sh output (MemAvailable, swap %, cold starts)
 Broken:        anything that stopped working, and how you reverted it
 ```
 
-Remove IP addresses, serials, account names and network names before posting. Run `sh tests/run.sh` if you change the scripts or the do-not-touch list.
+Elimina direcciones IP, números de serie, nombres de cuenta y nombres de red antes de publicar. Ejecuta `sh tests/run.sh` si modificas los scripts o la lista de paquetes que no se deben tocar.
 
-## 📄 License
+## 📄 Licencia
 
-[MIT](LICENSE). Built by Italo Sinisi ([@ItaloFabioSinisiQ](https://github.com/ItaloFabioSinisiQ)) on a TCL 65C6K. Not affiliated with TCL, Google or any vendor.
+[MIT](LICENSE). Creado por Italo Sinisi ([@ItaloFabioSinisiQ](https://github.com/ItaloFabioSinisiQ)) en un TCL 65C6K. Sin afiliación con TCL, Google ni ningún fabricante.
