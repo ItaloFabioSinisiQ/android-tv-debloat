@@ -1,0 +1,20 @@
+# TCL G08 board (e.g. TCL 65C6K), Google TV, Android 14.
+# Batch 2: the firmware silently RE-ENABLED these at boot after `pm disable-user`.
+# `pm uninstall -k --user 0` survived reboots. The APK stays on the system
+# partition; restore with `cmd package install-existing --user 0 <pkg>`.
+# Test HDMI inputs after applying. Review docs/packages-tcl-g08.md first.
+# Usage: scripts/debloat.sh <SERIAL> scripts/lists/tcl-g08-uninstall.txt --method uninstall [--apply]
+
+com.google.android.syncadapters.calendar
+com.tcl.ttvs
+com.tcl.miracast
+com.tcl.logkit
+com.tcl.usercenter
+com.tcl.tv.tclhome_passive
+com.tcl.interactive
+com.tcl.guard
+com.tcl.UpdatePeripheral
+com.tcl.smartlink.core
+android.autoinstalls.config.google.gtvpai
+com.google.android.partnersetup
+com.android.tv.feedbackconsent

@@ -1,0 +1,26 @@
+# TCL G08 board (e.g. TCL 65C6K), Google TV, Android 14.
+# Batch 1: these stayed disabled across reboots with `pm disable-user`.
+# Review docs/packages-tcl-g08.md before applying. Other firmwares differ.
+# Usage: scripts/debloat.sh <SERIAL> scripts/lists/tcl-g08-disable.txt --method disable [--apply]
+
+# TCL Channel and promotional overlays
+com.tcl.channelplus
+com.tcl.waterfall.overseas
+com.tcl.partnercustomizer
+com.tcl.esticker
+com.tcl.messagebox
+
+# Store demo, hotel mode, manuals
+com.tcl.exhibit
+com.tcl.hotelmenu
+com.tcl.repairguide
+com.tcl.ocean.instructions
+
+# Optional features (only if you do not use them)
+com.tcl.smartalexa
+com.tcl.t_solo
+com.tcl.airplay2
+com.mediatek.AirplayAPK
+com.mediatek.airplaydaemon
+com.google.android.play.games
+com.google.android.feedback
