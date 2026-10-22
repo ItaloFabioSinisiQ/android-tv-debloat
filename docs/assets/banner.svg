@@ -1,0 +1,75 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="320" viewBox="0 0 1280 320" role="img" aria-labelledby="title desc">
+  <title id="title">Android TV debloat</title>
+  <desc id="desc">A TV with a memory gauge rising from 528 MB to 1031 MB available, next to the project name.</desc>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#0b1220"/>
+      <stop offset="1" stop-color="#122a3a"/>
+    </linearGradient>
+    <linearGradient id="screen" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#0f2a33"/>
+      <stop offset="1" stop-color="#081a22"/>
+    </linearGradient>
+    <linearGradient id="bar" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#3ddc84"/>
+      <stop offset="1" stop-color="#7cf0b4"/>
+    </linearGradient>
+    <linearGradient id="arc" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#f2994a"/>
+      <stop offset="0.5" stop-color="#f2c94c"/>
+      <stop offset="1" stop-color="#3ddc84"/>
+    </linearGradient>
+    <pattern id="grid" width="32" height="32" patternUnits="userSpaceOnUse">
+      <path d="M32 0H0V32" fill="none" stroke="#ffffff" stroke-opacity="0.04" stroke-width="1"/>
+    </pattern>
+  </defs>
+
+  <!-- Self-contained background: readable on light and dark GitHub themes -->
+  <rect width="1280" height="320" rx="24" fill="url(#bg)"/>
+  <rect width="1280" height="320" rx="24" fill="url(#grid)"/>
+
+  <!-- TV silhouette -->
+  <g transform="translate(72 44)">
+    <rect x="0" y="0" width="360" height="210" rx="14" fill="#1c2633" stroke="#3a4a5e" stroke-width="3"/>
+    <rect x="14" y="14" width="332" height="182" rx="6" fill="url(#screen)"/>
+    <!-- stand -->
+    <path d="M150 210 L136 238 H224 L210 210 Z" fill="#2a3646"/>
+    <rect x="110" y="236" width="140" height="8" rx="4" fill="#3a4a5e"/>
+
+    <!-- speed gauge on screen -->
+    <g transform="translate(110 150)">
+      <path d="M-70 0 A70 70 0 0 1 70 0" fill="none" stroke="#24384a" stroke-width="12" stroke-linecap="round"/>
+      <path d="M-70 0 A70 70 0 0 1 70 0" fill="none" stroke="url(#arc)" stroke-width="12" stroke-linecap="round" stroke-dasharray="190 400"/>
+      <line x1="0" y1="0" x2="44" y2="-46" stroke="#e8f1f8" stroke-width="5" stroke-linecap="round"/>
+      <circle r="8" fill="#e8f1f8"/>
+    </g>
+
+    <!-- RAM bars on screen -->
+    <g font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="13" fill="#9fb3c8">
+      <text x="206" y="58">RAM available</text>
+      <text x="206" y="88">before</text>
+      <rect x="206" y="94" width="120" height="12" rx="6" fill="#24384a"/>
+      <rect x="206" y="94" width="61" height="12" rx="6" fill="#f2994a"/>
+      <text x="206" y="130">after reboot</text>
+      <rect x="206" y="136" width="120" height="12" rx="6" fill="#24384a"/>
+      <rect x="206" y="136" width="118" height="12" rx="6" fill="url(#bar)"/>
+      <text x="206" y="172" fill="#e8f1f8">528 → 1031 MB</text>
+    </g>
+  </g>
+
+  <!-- Title block -->
+  <g font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif">
+    <text x="500" y="128" font-size="58" font-weight="700" fill="#f5f9fc">android-tv-debloat</text>
+    <text x="502" y="176" font-size="24" fill="#9fb3c8">Measured, reversible tuning for low-RAM Android TVs</text>
+    <g font-size="18" font-weight="600">
+      <rect x="502" y="210" width="118" height="36" rx="18" fill="#3ddc84" fill-opacity="0.14" stroke="#3ddc84" stroke-opacity="0.5"/>
+      <text x="561" y="234" text-anchor="middle" fill="#7cf0b4">ADB only</text>
+      <rect x="634" y="210" width="118" height="36" rx="18" fill="#56ccf2" fill-opacity="0.14" stroke="#56ccf2" stroke-opacity="0.5"/>
+      <text x="693" y="234" text-anchor="middle" fill="#8fdcf7">No root</text>
+      <rect x="766" y="210" width="144" height="36" rx="18" fill="#f2c94c" fill-opacity="0.14" stroke="#f2c94c" stroke-opacity="0.5"/>
+      <text x="838" y="234" text-anchor="middle" fill="#f6dc8a">Reversible</text>
+      <rect x="924" y="210" width="144" height="36" rx="18" fill="#bb86fc" fill-opacity="0.14" stroke="#bb86fc" stroke-opacity="0.5"/>
+      <text x="996" y="234" text-anchor="middle" fill="#d4b4fd">AI skill</text>
+    </g>
+  </g>
+</svg>
